@@ -1,0 +1,62 @@
+{
+	"name": "SqlDestination_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EmployeeID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FirstName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LastName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Email",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Department",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Salary",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "HireDate",
+				"type": "date"
+			},
+			{
+				"name": "LoadDate",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "SourceFile",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "EmployeeData"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,201 @@
+{
+	"name": "PL_Excel_To_SQL_ETL",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get File Metadata",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ExcelSource_DS",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"exists",
+						"itemName",
+						"lastModified"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "Transform Data",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Get File Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Excel_Transformation",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Log Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Transform Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_InsertAuditLog]",
+					"storedProcedureParameters": {
+						"EndTime": {
+							"value": {
+								"value": "@utcNow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ErrorMessage": {
+							"value": "",
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"RowsInserted": {
+							"value": {
+								"value": "@activity('Transform Data').output.runStatus.metrics.sink1.rowsWritten",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"RowsProcessed": {
+							"value": {
+								"value": "@activity('Transform Data').output.runStatus.metrics.sink1.stages[0].recordsRead",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"RowsSkipped": {
+							"value": "0",
+							"type": "Int32"
+						},
+						"RunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"SourceFile": {
+							"value": {
+								"value": "@pipeline().parameters.FileName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"StartTime": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Status": {
+							"value": "Success",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase_LS",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "WebActivity",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Log Success",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-26.centralindia.logic.azure.com:443/workflows/c4e1da66bf8b4262ae0c88aef6452b02/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=4tZNApUPZ9VvK5JZ_sn5spGu4SdIHMnygmed7bSRXRw",
+					"body": {
+						"value": "{ \n    \"PipelineName\": \"@{pipeline().Pipeline}\",\n    \"FileName\": \"@{pipeline().parameters.FileName}\",\n    \"RunID\": \"@{pipeline().RunId}\",\n    \"RowsProcessed\": \"@{activity('Transform Data').output.runStatus.metrics.sink1.stages[0].recordsRead}\",\n    \"NotificationEmail\": \"@{pipeline().parameters.NotificationEmail}\" \n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"FileName": {
+				"type": "string",
+				"defaultValue": "EmployeeData.xlsx"
+			},
+			"NotificationEmail": {
+				"type": "string",
+				"defaultValue": "prakashjoshi2138@gmail.com"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-08-06T13:00:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

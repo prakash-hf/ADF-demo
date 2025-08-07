@@ -1,0 +1,47 @@
+{
+	"name": "DF_Excel_Transformation",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ExcelSource_DS",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureStorage_LS",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 alterRow(upsertIf(1>0)) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'excel-files',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

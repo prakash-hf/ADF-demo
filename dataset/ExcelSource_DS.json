@@ -1,0 +1,21 @@
+{
+	"name": "ExcelSource_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureStorage_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Sheet1",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "EmployeeData.xlsx",
+				"container": "excel-files"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

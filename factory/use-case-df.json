@@ -1,0 +1,9 @@
+{
+	"name": "use-case-df",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "6fb02397-c2bc-4f1e-a51d-446c93165344",
+		"tenantId": "5e17b6a5-a533-4d7e-97df-0fa1b5084aaa"
+	}
+}
